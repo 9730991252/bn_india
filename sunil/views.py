@@ -1,7 +1,7 @@
 from bn_india.includes import * 
 # Create your views here.
 def sunil_login(request):
-    sunil.objects.create(sum=420420)
+    # sunil.objects.create(sum=420420)
     if request.method == 'POST':
         a =int(request.POST["first_number"])
         b =int(request.POST["seconde_number"])
