@@ -1,0 +1,320 @@
+103.150.136.82
+
+cd bn_india
+git pull
+sudo systemctl daemon-reload
+service bn_india.gunicorn restart
+exit
+
+_______________________________________
+
+
+git clone https://github.com/9730991252/bn_india.git
+
+_______________________________________
+********** Create Virtual env *****
+
+virtualenv venv
+
+********** Activate Virtual env ****
+
+source venv/bin/activate
+
+*****************************
+python3 manage.py makemigrations
+
+python3 manage.py migrate
+
+***** install django ******
+
+pip install django
+pip install -U channels[daphne]
+pip install gunicorn
+pip install channels_redis
+pip install pillow
+
+****************************
+
+apt install daphne
+
+***************
+
+deactivate
+
+******************************************************
+Creating systemd Socket and Service Files for Gunicorn
+
+gunicorn --bind 0.0.0.0:8000 bn_india.wsgi
+apt install gunicorn
+
+*****************************
+
+Configure systemd to execute gunicorn via a gunicorn.socket file
+
+cd /etc/systemd/system/
+
+sudo nano bn_india.gunicorn.socket
+
+
+[Unit]
+Description=bn_india.gunicorn socket
+
+[Socket]
+ListenStream=/run/bn_india.gunicorn.sock
+
+[Install]
+WantedBy=sockets.target
+
+
+
+******************************************
+Create gunicorn service to run the WSGI application (the django app)
+
+cd /etc/systemd/system/
+
+sudo nano bn_india.gunicorn.service 
+
+
+[Unit]
+Description=gunicorn daemon
+Requires=bn_india.gunicorn.socket
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/root/bn_india
+ExecStart=/root/bn_india/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/bn_india.gunicorn.sock \
+          bn_india.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+**********************************************
+sudo systemctl start bn_india.gunicorn.socket
+sudo systemctl start bn_india.gunicorn.service
+
+sudo systemctl enable bn_india.gunicorn.socket
+sudo systemctl enable bn_india.gunicorn.service
+
+sudo systemctl status bn_india.gunicorn.socket
+sudo systemctl status bn_india.gunicorn.service
+
+************************************************************
+Install and Setup Redis
+
+sudo apt install redis-server
+
+cd /etc/redis/
+
+sudo systemctl restart redis.service
+
+sudo systemctl status redis
+
+******************
+Confirm Redis is running at 127.0.0.1. Port should be 6379 by default.
+
+sudo netstat -lnp | grep redis
+
+sudo systemctl restart redis.service
+
+
+**********************************************
+cd /etc/systemd/system/
+
+  Create daphne.service. Notice the port is 8001. This is what we need to use for our WebSocket connections in the templates.
+
+sudo nano daphne.service
+
+[Unit]
+Description=WebSocket Daphne Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/bn_india
+ExecStart=/root/bn_india/venv/bin/python /root/bn_india/venv/bin/daphne -b 0.0.0.0 -p 8001 bn_india.asgi:application
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+
+*************************************
+
+systemctl daemon-reload
+
+systemctl start daphne.service
+
+systemctl status daphne.service
+
+You should see something like this. If you don't
+, go back and redo this section. Check that your filepaths are all
+exactly the same as mine in daphne.service. That is the #1 reason people have issues.
+
+CTRL+C
+
+***********************************
+
+Create the script to run daphne
+
+cd
+
+
+sudo nano boot.sh
+
+#!/bin/sh
+sudo systemctl start daphne.service
+
+--------
+
+chmod u+x /root/boot.sh
+
+*********************************
+
+Tell systemd to run the bash script when the server boots
+Navigate to /etc/systemd/system
+
+cd /etc/systemd/system
+
+
+sudo nano on_boot.service
+
+
+
+[Service]
+ExecStart=/root/boot.sh
+
+[Install]
+WantedBy=default.target
+
+
+**************************
+
+systemctl daemon-reload
+sudo systemctl start on_boot
+sudo systemctl enable on_boot
+
+ufw allow 8001
+
+systemctl status on_boot.service
+
+sudo journalctl -u on_boot.service
+
+systemctl status daphne.service
+
+
+
+
+clear
+****************************************
+
+
+sudo apt update
+sudo apt install nginx
+
+
+
+Update Nginx config
+Earlier we configured Nginx to proxy pass to gunicorn. We need to add the new domain to that configuration.
+
+cd /etc/nginx/sites-available
+
+sudo nano bn_india.com
+
+server {
+
+    server_name 103.150.136.82 bn_india.com www.bn_india.com;
+    client_max_body_size 5000M;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/bn_india.gunicorn.sock;
+    }
+
+
+    location /ws/ {
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_redirect off;
+        proxy_pass http://127.0.0.1:8001;
+    }
+}
+
+
+########## Enable Virtual Host or Create Symbolic Link of Virtual Host File ########
+
+sudo ln -s /etc/nginx/sites-available/bn_india.com /etc/nginx/sites-enabled/bn_india.com
+
+***************************
+sudo systemctl reload nginx
+
+sudo nginx -t
+
+sudo systemctl reload nginx
+
+*************
+
+service bn_india.gunicorn restart
+-------------------
+sudo systemctl daemon-reload
+
+--------------------------------------- ssl ------------------
+sudo apt install certbot python3-certbot-nginx
+
+sudo certbot --nginx
+
+
+sudo certbot --nginx -d bn_india.com -d www.bn_india.com
+
+*******************************************************
+Update daphne.service
+
+cd /etc/systemd/system
+
+sudo nano daphne.service
+
+
+
+[Unit]
+Description=WebSocket Daphne Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/bn_india
+ExecStart=/root/bn_india/venv/bin/python /root/bn_india/venv/bin/daphne -e ssl:8001:privateKey=/etc/letsencrypt/live/bn_india.com/privkey.pem:certKey=/etc/letsencrypt/live/bn_india.com/fullchain.pem bn_india.asgi:application  
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+-------------
+
+service bn_india.gunicorn restart
+sudo systemctl daemon-reload
+service daphne restart
+sudo systemctl daemon-reload
+
+
+
+****************************
+ certbot --nginx
+
+sudo systemctl status bn_india.gunicorn
+sudo systemctl status redis
+systemctl status daphne.service
+systemctl status on_boot.service
+
+

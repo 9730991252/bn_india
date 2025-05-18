@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block head %}
+
+{% endblock head %}
+{% block content %}
+{% load static %}
+{% include 'alert.html' %}
+{% include 'index_navbhar.html' %}
+
+
+
+
+{% include 'index_footer.html' %}
+{% endblock content %}

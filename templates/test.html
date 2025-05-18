@@ -1,0 +1,117 @@
+{% load static %}
+<style>
+/* NavBar Start */
+    .navbar{
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: rgb(255, 255, 255) !important;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        z-index: +645456132496;
+        display: flex !important;
+    }
+/* NavBar End */
+</style>
+<style>
+    .side_btn{
+        transform: rotate(90deg);
+        background-color: rgba(240, 248, 255, 0);
+        border: none;
+        font-size: 25px;
+        width: fit-content;
+    }
+    .href_btn{
+      background-color: #343a40;
+      border-radius: 10px;
+      color: white !important;
+
+    }
+    .href_btn:hover{
+        background-color: #0080ff;
+        border-radius: 10px;
+        color: white !important;
+    }
+    .at_page{
+      background-color: #0080ff;
+      border-radius: 10px;
+      color: white !important;
+      }
+      .offcanvas{
+        width: 20%;
+      }
+      @media screen and (max-width: 450px) {
+        .offcanvas {
+          width: 80%;
+        }
+        .navbar-brand {
+          font-size: 14px;
+        }
+        .side_btn {
+          font-size: 20px;
+        }
+        .href_btn {
+          font-size: 12px;
+          padding: 5px 10px;
+        }
+      }
+  </style>
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+
+    <div class="container-fluid">
+        <button class="btn side_btn form-control" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">|||</button>
+        <img src="{% static 'img/logo.jpg' %}" width="40px" style="border-radius: 50%;" alt="">
+      <a class="navbar-brand" style="font-weight: 700;" href="/#home"> &nbsp; BN India</a>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        {{clerk.batch.name}}
+      </div>
+    </div>
+  </nav>
+
+
+
+  <div class="offcanvas offcanvas-start" style="z-index: +654654654645;" data-bs-scroll="true" tabindex="+1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">
+        <img src="{% static 'img/logo.jpg' %}" width="40px" style="border-radius: 50%;" alt="">
+      <a class="navbar-brand" style="font-weight: 700;" href="/"> &nbsp; BN India</a>
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div><i class="fa-solid fa-house"></i> &nbsp;&nbsp; <a href="/office/office_home/" class="btn {% if request.path == '/office/office_home/' %} at_page {% endif %}">Home</a></div>
+
+      <div>
+        <i class="fa-solid fa-user"></i> 
+            <button class="btn dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#member" aria-expanded="false" aria-controls="collapseExample">Member</button>
+
+            <div class="collapse" id="member" style="width: 90%;margin-left: auto;margin-right: 20px;">
+              <div class="card card-body">
+                <a href="/office/add_member/" class="btn href_btn {% if request.path == '/school/add_member/' %} at_page {% endif %}">Add & View Member</a>
+              </div>
+            </div>
+      </div>
+      <div>
+        <i class="fa-solid fa-users"></i> &nbsp;
+            <button class="btn dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#group" aria-expanded="false" aria-controls="collapseExample">Group</button>
+
+            <div class="collapse" id="group" style="width: 90%;margin-left: auto;margin-right: 20px;">
+              <div class="card card-body">
+                <a href="/office/add_group/" class="btn href_btn {% if request.path == '/school/add_group/' %} at_page {% endif %}">Add & View Group</a>
+              </div>
+            </div>
+      </div>
+      <div>
+        <i class="fa-solid fa-user-tie"></i> &nbsp;
+            <button class="btn dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#group" aria-expanded="false" aria-controls="collapseExample">Group</button>
+
+            <div class="collapse" id="group" style="width: 90%;margin-left: auto;margin-right: 20px;">
+              <div class="card card-body">
+                <a href="/office/add_group/" class="btn href_btn {% if request.path == '/school/add_group/' %} at_page {% endif %}">Add & View Group</a>
+              </div>
+            </div>
+      </div>
+
+      </div>
+    </div>
+  </div>

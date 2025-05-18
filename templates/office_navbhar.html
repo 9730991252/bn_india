@@ -1,0 +1,149 @@
+{% load static %}
+
+<style>
+  /* Navbar Styling */
+  .navbar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #fff !important;
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px;
+    z-index: 1000;
+    display: flex !important;
+  }
+
+  /* Side Button */
+  .side_btn {
+    transform: rotate(90deg);
+    background-color: transparent;
+    border: none;
+    font-size: 24px;
+    width: fit-content;
+  }
+
+  /* Link Buttons */
+  .href_btn {
+    background-color: #343a40;
+    border-radius: 8px;
+    color: white !important;
+  }
+
+  .href_btn:hover {
+    background-color: #0080ff;
+    color: white !important;
+  }
+
+  .at_page {
+    background-color: #0080ff;
+    border-radius: 8px;
+    color: white !important;
+  }
+
+  .offcanvas {
+    width: 20%;
+  }
+
+  @media screen and (max-width: 450px) {
+    .offcanvas {
+      width: 80%;
+    }
+
+    .navbar-brand {
+      font-size: 14px;
+    }
+
+    .side_btn {
+      font-size: 20px;
+    }
+
+    .href_btn {
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+  }
+</style>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <button class="btn side_btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">
+      |||
+    </button>
+    <img src="{% static 'img/logo.jpg' %}" width="40px" style="border-radius: 50%;" alt="">
+    <a class="navbar-brand fw-bold" href="/#home">&nbsp; BN India</a>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      {{ clerk.batch.name }}
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar Offcanvas -->
+<div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">
+      <img src="{% static 'img/logo.jpg' %}" width="40px" style="border-radius: 50%;" alt="">
+      <a class="navbar-brand fw-bold" href="/"> &nbsp; BN India</a>
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <!-- Home -->
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <i class="fa-solid fa-house"></i>
+      <a href="/office/office_home/" class="btn px-3 py-1 {% if request.path == '/office/office_home/' %} at_page {% endif %}">Home</a>
+    </div>
+
+    <!-- Member -->
+    <div class="mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-user"></i>
+        <button class="btn dropdown-toggle px-3 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#memberMenu">
+          Member
+        </button>
+      </div>
+      <div class="collapse" id="memberMenu">
+        <div class="card card-body p-2">
+          <a href="/office/add_member/" class="btn href_btn w-100 {% if request.path == '/school/add_member/' %} at_page {% endif %}">
+            Add & View Member
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group -->
+    <div class="mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-users"></i>
+        <button class="btn dropdown-toggle px-3 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#groupMenu">
+          Group
+        </button>
+      </div>
+      <div class="collapse" id="groupMenu">
+        <div class="card card-body p-2">
+          <a href="/office/add_group/" class="btn href_btn w-100 {% if request.path == '/school/add_group/' %} at_page {% endif %}">
+            Add & View Group
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Office employee -->
+    <div class="mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-user-tie"></i>
+        <button class="btn dropdown-toggle px-3 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#employeeMenu">
+          Employee
+        </button>
+      </div>
+      <div class="collapse" id="employeeMenu">
+        <div class="card card-body p-2">
+          <a href="/office/add_office_employee/" class="btn href_btn w-100 {% if request.path == '/school/add_office_employee/' %} at_page {% endif %}">
+            Add & View Office Employee
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
