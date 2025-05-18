@@ -2,7 +2,7 @@
 
 cd bn_india
 git pull
-sudo systemctl daemon-reload
+ systemctl daemon-reload
 service bn_india.gunicorn restart
 exit
 
@@ -10,6 +10,8 @@ _______________________________________
 
 
 git clone https://github.com/9730991252/bn_india.git
+
+cd bn_india
 
 _______________________________________
 ********** Create Virtual env *****
@@ -53,7 +55,7 @@ Configure systemd to execute gunicorn via a gunicorn.socket file
 
 cd /etc/systemd/system/
 
-sudo nano bn_india.gunicorn.socket
+ nano bn_india.gunicorn.socket
 
 
 [Unit]
@@ -72,7 +74,7 @@ Create gunicorn service to run the WSGI application (the django app)
 
 cd /etc/systemd/system/
 
-sudo nano bn_india.gunicorn.service 
+ nano bn_india.gunicorn.service 
 
 
 [Unit]
@@ -97,40 +99,41 @@ WantedBy=multi-user.target
 
 
 **********************************************
-sudo systemctl start bn_india.gunicorn.socket
-sudo systemctl start bn_india.gunicorn.service
+ systemctl start bn_india.gunicorn.socket
+ systemctl start bn_india.gunicorn.service
 
-sudo systemctl enable bn_india.gunicorn.socket
-sudo systemctl enable bn_india.gunicorn.service
+ systemctl enable bn_india.gunicorn.socket
+ systemctl enable bn_india.gunicorn.service
 
-sudo systemctl status bn_india.gunicorn.socket
-sudo systemctl status bn_india.gunicorn.service
+ systemctl status bn_india.gunicorn.socket
+ systemctl status bn_india.gunicorn.service
 
 ************************************************************
 Install and Setup Redis
 
-sudo apt install redis-server
+ apt install redis-server
 
 cd /etc/redis/
 
-sudo systemctl restart redis.service
+ systemctl restart redis.service
 
-sudo systemctl status redis
+ systemctl status redis
 
 ******************
 Confirm Redis is running at 127.0.0.1. Port should be 6379 by default.
 
-sudo netstat -lnp | grep redis
+ netstat -lnp | grep redis
 
-sudo systemctl restart redis.service
+ systemctl restart redis.service
 
 
 **********************************************
-cd /etc/systemd/system/
-
   Create daphne.service. Notice the port is 8001. This is what we need to use for our WebSocket connections in the templates.
 
-sudo nano daphne.service
+
+cd /etc/systemd/system/
+
+ nano daphne.service
 
 [Unit]
 Description=WebSocket Daphne Service
@@ -168,10 +171,10 @@ Create the script to run daphne
 cd
 
 
-sudo nano boot.sh
+ nano boot.sh
 
 #!/bin/sh
-sudo systemctl start daphne.service
+ systemctl start daphne.service
 
 --------
 
@@ -185,7 +188,7 @@ Navigate to /etc/systemd/system
 cd /etc/systemd/system
 
 
-sudo nano on_boot.service
+ nano on_boot.service
 
 
 
@@ -199,14 +202,14 @@ WantedBy=default.target
 **************************
 
 systemctl daemon-reload
-sudo systemctl start on_boot
-sudo systemctl enable on_boot
+ systemctl start on_boot
+ systemctl enable on_boot
 
 ufw allow 8001
 
 systemctl status on_boot.service
 
-sudo journalctl -u on_boot.service
+ journalctl -u on_boot.service
 
 systemctl status daphne.service
 
@@ -217,8 +220,8 @@ clear
 ****************************************
 
 
-sudo apt update
-sudo apt install nginx
+ apt update
+ apt install nginx
 
 
 
@@ -227,11 +230,11 @@ Earlier we configured Nginx to proxy pass to gunicorn. We need to add the new do
 
 cd /etc/nginx/sites-available
 
-sudo nano bn_india.com
+ nano bn_india.com
 
 server {
 
-    server_name 103.150.136.82 bn_india.com www.bn_india.com;
+    server_name 103.150.136.82 bn.tejorder.com www.bn.tejorder.com;
     client_max_body_size 5000M;
 
     location = /favicon.ico { access_log off; log_not_found off; }
@@ -254,35 +257,33 @@ server {
 
 ########## Enable Virtual Host or Create Symbolic Link of Virtual Host File ########
 
-sudo ln -s /etc/nginx/sites-available/bn_india.com /etc/nginx/sites-enabled/bn_india.com
+ ln -s /etc/nginx/sites-available/bn_india.com /etc/nginx/sites-enabled/bn_india.com
 
 ***************************
-sudo systemctl reload nginx
+ systemctl reload nginx
 
-sudo nginx -t
+ nginx -t
 
-sudo systemctl reload nginx
+ systemctl reload nginx
 
 *************
 
 service bn_india.gunicorn restart
 -------------------
-sudo systemctl daemon-reload
+ systemctl daemon-reload
 
 --------------------------------------- ssl ------------------
-sudo apt install certbot python3-certbot-nginx
-
-sudo certbot --nginx
+ apt install certbot python3-certbot-nginx
 
 
-sudo certbot --nginx -d bn_india.com -d www.bn_india.com
+ certbot --nginx -d bn_india.com -d www.bn_india.com
 
 *******************************************************
 Update daphne.service
 
 cd /etc/systemd/system
 
-sudo nano daphne.service
+ nano daphne.service
 
 
 
@@ -294,7 +295,7 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/root/bn_india
-ExecStart=/root/bn_india/venv/bin/python /root/bn_india/venv/bin/daphne -e ssl:8001:privateKey=/etc/letsencrypt/live/bn_india.com/privkey.pem:certKey=/etc/letsencrypt/live/bn_india.com/fullchain.pem bn_india.asgi:application  
+ExecStart=/root/bn_india/venv/bin/python /root/bn_india/venv/bin/daphne -e ssl:8001:privateKey=/etc/letsencrypt/live/bn.tejorder.com/privkey.pem:certKey=/etc/letsencrypt/live/bn.tejorder.com/fullchain.pem bn_india.asgi:application  
 Restart=on-failure
 
 [Install]
@@ -303,17 +304,16 @@ WantedBy=multi-user.target
 -------------
 
 service bn_india.gunicorn restart
-sudo systemctl daemon-reload
+ systemctl daemon-reload
 service daphne restart
-sudo systemctl daemon-reload
+ systemctl daemon-reload
 
 
 
 ****************************
- certbot --nginx
 
-sudo systemctl status bn_india.gunicorn
-sudo systemctl status redis
+ systemctl status bn_india.gunicorn
+ systemctl status redis
 systemctl status daphne.service
 systemctl status on_boot.service
 
